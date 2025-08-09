@@ -1,0 +1,40 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+
+model Site { id String @id @default(cuid()); name String @unique; stock Stock[]; sales Sale[] }
+model Product {
+  id String @id
+  name String
+  barcode String? @unique
+  category String?
+  location String?
+  cost Decimal @db.Decimal(10,2)
+  price Decimal @db.Decimal(10,2)
+  priceA Decimal @db.Decimal(10,2) @default(0)
+  priceB Decimal @db.Decimal(10,2) @default(0)
+  specs String?
+  images Json?
+  stock Stock[]
+  items SaleItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Stock { id String @id @default(cuid()); product Product @relation(fields:[productId],references:[id]); productId String; site Site @relation(fields:[siteId],references:[id]); siteId String; qty Int @default(0); @@unique([productId, siteId]) }
+model Customer { id String @id @default(cuid()); name String; phone String?; rfc String?; creditLimit Int @default(0); balance Int @default(0); sales Sale[] }
+model Employee { id String @id @default(cuid()); name String; role String?; commissionPct Decimal @db.Decimal(5,2) @default(0); active Boolean @default(true); sales Sale[] }
+model Sale {
+  id String @id @default(cuid())
+  folio String @unique
+  status String @default("pagada")
+  method String
+  subtotal Decimal @db.Decimal(10,2)
+  discount Decimal @db.Decimal(10,2)
+  total Decimal @db.Decimal(10,2)
+  site Site? @relation(fields:[siteId],references:[id]); siteId String?
+  customer Customer?; customerId String?
+  employee Employee?; employeeId String?
+  items SaleItem[]
+  createdAt DateTime @default(now())
+}
+model SaleItem { id String @id @default(cuid()); sale Sale @relation(fields:[saleId],references:[id]); saleId String; product Product @relation(fields:[productId],references:[id]); productId String; name String; qty Int; price Decimal @db.Decimal(10,2) }
+model CashMovement { id String @id @default(cuid()); amount Decimal @db.Decimal(10,2); desc String; createdAt DateTime @default(now()) }
