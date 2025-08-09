@@ -11,15 +11,6 @@ RUN npm install
 COPY . .
 
 # Generate the Prisma client based on schema.prisma
-RUN npx prisma generate
-
-# Build the frontend into the dist folder
-RUN npm run build
-
-# Second stage: production image
-FROM node:18-slim
-WORKDIR /app
-ENV NODE_ENV=production
 
 # Copy installed dependencies and built assets from the build stage
 COPY --from=build /app/node_modules ./node_modules
